@@ -85,10 +85,19 @@ class App {
 
     this.data = this.imgData.data;
     for (let i = 0; i < this.data.length; i += 4) {
-      const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
-      this.data[i] = avg; // red
-      this.data[i + 1] = avg; // green
-      this.data[i + 2] = avg; // blue
+      if (
+        this.data[i] - this.data[i + 1] > 50 &&
+        this.data[i] - this.data[i + 2] > 50
+      ) {
+        this.data[i] = this.data[i];
+        this.data[i + 1] = this.data[i + 1];
+        this.data[i + 2] = this.data[i + 2];
+      } else {
+        const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
+        this.data[i] = avg; // red
+        this.data[i + 1] = avg; // green
+        this.data[i + 2] = avg; // blue
+      }
     }
     this.ctx.putImageData(this.imgData, 0, 0);
   }
