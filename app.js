@@ -25,6 +25,16 @@ class App {
       this.isLoaded = true;
       this.drawImage();
     };
+
+    this.isDown = false;
+    this.moveX = 0;
+    this.moveY = 0;
+    this.offsetX = 0;
+    this.offsetY = 0;
+
+    document.addEventListener("pointerdown", this.onDown.bind(this), false);
+    document.addEventListener("pointermove", this.onMove.bind(this), false);
+    document.addEventListener("pointerup", this.onUp.bind(this), false);
   }
 
   resize() {
@@ -85,25 +95,47 @@ class App {
 
     this.data = this.imgData.data;
     for (let i = 0; i < this.data.length; i += 4) {
-      if (
-        this.data[i] - this.data[i + 1] > 50 &&
-        this.data[i] - this.data[i + 2] > 50
-      ) {
-        this.data[i] = this.data[i];
-        this.data[i + 1] = this.data[i + 1];
-        this.data[i + 2] = this.data[i + 2];
-      } else {
-        const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
-        this.data[i] = avg; // red
-        this.data[i + 1] = avg; // green
-        this.data[i + 2] = avg; // blue
-      }
+      // if (
+      //   this.data[i] - this.data[i + 1] > 50 &&
+      //   this.data[i] - this.data[i + 2] > 50
+      // ) {
+      //   this.data[i] = this.data[i];
+      //   this.data[i + 1] = this.data[i + 1];
+      //   this.data[i + 2] = this.data[i + 2];
+      // } else {
+
+      const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
+      this.data[i] = avg; // red
+      this.data[i + 1] = avg; // green
+      this.data[i + 2] = avg; // blue
+      // }
     }
     this.ctx.putImageData(this.imgData, 0, 0);
   }
 
   animate() {
     window.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  onDown(e) {
+    this.isDown = true;
+    this.moveX = 0;
+    this.moveY = 0;
+    this.offsetX = e.clientX;
+    this.offsetY = e.clientY;
+  }
+
+  onMove(e) {
+    if (this.isDown) {
+      this.moveX = e.clientX - this.offsetX;
+      this.moveY = e.clientY - this.offsetY;
+      this.offsetX = e.clientX;
+      this.offsetY = e.clientY;
+    }
+  }
+
+  onUp(e) {
+    this.isDown = false;
   }
 }
 
