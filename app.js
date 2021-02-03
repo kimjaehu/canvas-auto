@@ -1,3 +1,4 @@
+import { Light } from "./light.js";
 import { toHsv } from "./utils.js";
 
 class App {
@@ -10,6 +11,8 @@ class App {
 
     window.addEventListener("resize", this.resize.bind(this), false);
     this.resize();
+
+    this.pixels = [];
 
     this.isLoaded = false;
     this.imgPos = {
@@ -54,6 +57,8 @@ class App {
   }
 
   drawImage() {
+    this.pixels = [];
+
     const stageRatio = this.stageWidth / this.stageHeight;
     const imgRatio = this.image.width / this.image.height;
 
@@ -95,26 +100,38 @@ class App {
 
     this.data = this.imgData.data;
     for (let i = 0; i < this.data.length; i += 4) {
-      // if (
-      //   this.data[i] - this.data[i + 1] > 50 &&
-      //   this.data[i] - this.data[i + 2] > 50
-      // ) {
-      //   this.data[i] = this.data[i];
-      //   this.data[i + 1] = this.data[i + 1];
-      //   this.data[i + 2] = this.data[i + 2];
-      // } else {
+      if (
+        this.data[i] - this.data[i + 1] > 50 &&
+        this.data[i] - this.data[i + 2] > 50
+      ) {
+        let x = (i / 4) % this.stageWidth;
+        let y = (i / 4 - x) / this.stageWidth;
+
+        this.ctx.fillRect(x, y, 10, 10);
+
+        this.pixels.push(
+          new Light(x, y, this.data[i], this.data[i + 1], this.data[i + 2])
+        );
+        // this.data[i] = this.data[i];
+        // this.data[i + 1] = this.data[i + 1];
+        // this.data[i + 2] = this.data[i + 2];
+      }
 
       const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
       this.data[i] = avg; // red
       this.data[i + 1] = avg; // green
       this.data[i + 2] = avg; // blue
-      // }
     }
     this.ctx.putImageData(this.imgData, 0, 0);
   }
 
   animate() {
     window.requestAnimationFrame(this.animate.bind(this));
+    for (let i = 0; i < this.pixels.length; i++) {
+      const pixel = this.pixels[i];
+
+      pixel.animate(this.ctx);
+    }
   }
 
   onDown(e) {
