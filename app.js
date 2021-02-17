@@ -106,10 +106,9 @@ class App {
         this.data[i] - this.data[i + 1] > 25 &&
         this.data[i] - this.data[i + 2] > 25
       ) {
+        // get x, y coordinates
         let x = (i / 4) % this.stageWidth;
         let y = (i / 4 - x) / this.stageWidth;
-
-        this.ctx.fillRect(x, y, 10, 10);
 
         this.pixels.push(
           new Light(x, y, this.data[i], this.data[i + 1], this.data[i + 2])
