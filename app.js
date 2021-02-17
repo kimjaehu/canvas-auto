@@ -1,5 +1,4 @@
 import { Light } from "./light.js";
-import { toHsv } from "./utils.js";
 
 class App {
   constructor() {
@@ -23,12 +22,16 @@ class App {
     };
 
     this.image = new Image();
+    // 2021 Porsche 911 Turbo S
     this.image.src = "2021_porsche_911_turbo.jpg";
     this.image.onload = () => {
       this.isLoaded = true;
       this.drawImage();
     };
 
+    this.contrastPercent = 15;
+    this.contrast = this.contrastPercent / 100 + 1;
+    this.intercept = 128 * (1 - this.contrast);
     this.isDown = false;
     this.moveX = 0;
     this.moveY = 0;
@@ -36,7 +39,6 @@ class App {
     this.offsetY = 0;
 
     document.addEventListener("pointerdown", this.onDown.bind(this), false);
-    document.addEventListener("pointermove", this.onMove.bind(this), false);
     document.addEventListener("pointerup", this.onUp.bind(this), false);
   }
 
@@ -101,8 +103,8 @@ class App {
     this.data = this.imgData.data;
     for (let i = 0; i < this.data.length; i += 4) {
       if (
-        this.data[i] - this.data[i + 1] > 50 &&
-        this.data[i] - this.data[i + 2] > 50
+        this.data[i] - this.data[i + 1] > 25 &&
+        this.data[i] - this.data[i + 2] > 25
       ) {
         let x = (i / 4) % this.stageWidth;
         let y = (i / 4 - x) / this.stageWidth;
@@ -112,25 +114,32 @@ class App {
         this.pixels.push(
           new Light(x, y, this.data[i], this.data[i + 1], this.data[i + 2])
         );
-        // this.data[i] = this.data[i];
-        // this.data[i + 1] = this.data[i + 1];
-        // this.data[i + 2] = this.data[i + 2];
+        this.data[i] = this.data[i] * this.contrast + this.intercept;
+        this.data[i + 1] = this.data[i + 1];
+        this.data[i + 2] = this.data[i + 2];
       }
 
+      this.data[i] = this.data[i] * this.contrast + this.intercept;
+      this.data[i + 1] = this.data[i + 1] * this.contrast + this.intercept;
+      this.data[i + 2] = this.data[i + 2] * this.contrast + this.intercept;
       const avg = (this.data[i] + this.data[i + 1] + this.data[i + 2]) / 3;
       this.data[i] = avg; // red
       this.data[i + 1] = avg; // green
       this.data[i + 2] = avg; // blue
     }
-    this.ctx.putImageData(this.imgData, 0, 0);
   }
 
   animate() {
     window.requestAnimationFrame(this.animate.bind(this));
+
+    this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
+
+    if (this.isLoaded) {
+      this.ctx.putImageData(this.imgData, 0, 0);
+    }
     for (let i = 0; i < this.pixels.length; i++) {
       const pixel = this.pixels[i];
-
-      pixel.animate(this.ctx);
+      pixel.animate(this.ctx, this.isDown);
     }
   }
 
@@ -140,15 +149,6 @@ class App {
     this.moveY = 0;
     this.offsetX = e.clientX;
     this.offsetY = e.clientY;
-  }
-
-  onMove(e) {
-    if (this.isDown) {
-      this.moveX = e.clientX - this.offsetX;
-      this.moveY = e.clientY - this.offsetY;
-      this.offsetX = e.clientX;
-      this.offsetY = e.clientY;
-    }
   }
 
   onUp(e) {
